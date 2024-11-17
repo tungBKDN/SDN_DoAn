@@ -1,0 +1,5 @@
+alert tcp any any -> any any (flags: S; threshold: type both, track by_src, count 10, seconds 5; msg: "SYN FLOOD ATTACK"; sid: 1000003; rev: 1;)
+alert icmp any any -> any any (msg: "Ping of Death detected"; itype:8; dsize:>800; sid:1000004; rev:1;)
+alert icmp any any -> any any (msg:"ICMP Flood Attack Detected"; threshold: type both, track by_src, count 30, seconds 1; sid:1000005; rev:1;)
+alert tcp any any -> any 80 (msg:"Possible Slow HTTP Attack"; flow:to_server,established; content:"GET"; content:"HTTP/1.1"; flags: S; threshold: type both, track by_src, count 5, seconds 10; sid:1000006; rev:1;)
+
